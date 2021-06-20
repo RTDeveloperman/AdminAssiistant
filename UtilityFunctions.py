@@ -7,6 +7,10 @@ import subprocess
 import threading, time
 import platform
 from termcolor import colored
+import ctypes
+from string import ascii_uppercase
+
+
 ####################################################################################################################################################################
 def cpu_usage():
     # gives a single float value
@@ -158,6 +162,33 @@ def User_Folder_Details():
     for name,date in sorted_details_list[::-1]:
         print(colored(f"{name} :","yellow"),colored(f" {time.ctime(date)}","red"))
 ####################################################################################################################################################################
+def CheckUSBDriveIsExist():
+    kernel32 = ctypes.WinDLL('kernel32')
+    SEM_FAILCRITICALERRORS = 1
+    SEM_NOOPENFILEERRORBOX = 0x8000
+    SEM_FAIL = SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS
+
+    def FETCH_USBPATH():
+        usb_List=[]
+        oldmode = ctypes.c_uint()
+        kernel32.SetThreadErrorMode(SEM_FAIL, ctypes.byref(oldmode))
+        try:
+            for USBPATH in ascii_uppercase:
+                if os.path.exists('%s:\\File.ID' % USBPATH):
+                    USBPATH = '%s:\\' % USBPATH
+                    print('USB is mounted to:', USBPATH)
+                    usb_List.append(USBPATH) 
+            return usb_List
+        finally:
+            kernel32.SetThreadErrorMode(oldmode, ctypes.byref(oldmode))
+
+    USBdrive = FETCH_USBPATH()
+    while USBdrive == "":
+        print('Please plug in our USB drive and '
+            'press any key to continue...', end="")
+        input()
+        USBdrive = FETCH_USBPATH()
+####################################################################################################################################################################
 
 def Select(num)  :
    func={
@@ -170,6 +201,7 @@ def Select(num)  :
        7:ProcessPID_contractor,
        8:CloseApp_contractor,
        9:SerchProccessPID_contractor,
+       10:CheckUSBDriveIsExist,
       
    }
   
