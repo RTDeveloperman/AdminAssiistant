@@ -1,0 +1,9 @@
+1 ) Show CPU Usage
+2 ) Show Memory Usage
+3 ) Show Ip & ComputerName
+4 ) Show WIFI IP
+5 ) Show Details OF Users Folder
+6 ) Check App is Run In process
+7 ) Find Process ID(PID) from process name
+8 ) Close App With Process name
+9 ) Search Process ID(PID)
