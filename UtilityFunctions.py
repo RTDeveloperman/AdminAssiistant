@@ -2,6 +2,7 @@
 
 import psutil
 import os
+import re
 import socket    
 import subprocess
 import threading, time
@@ -9,10 +10,13 @@ import platform
 from termcolor import colored
 import ctypes
 from string import ascii_uppercase
-
+import datetime
+from persiantools.jdatetime import JalaliDate
+from ldap3 import Server, Connection, SAFE_SYNC
 
 ####################################################################################################################################################################
 def cpu_usage():
+    """ Show CPU Usage"""
     # gives a single float value
     print('The CPU usage is: ', psutil.cpu_percent(interval=4))
 ####################################################################################################################################################################
@@ -189,6 +193,63 @@ def CheckUSBDriveIsExist():
         input()
         USBdrive = FETCH_USBPATH()
 ####################################################################################################################################################################
+#whichFileChange(f"H:\program files\",5)
+def whichFileChange(dir,day):
+    ONE_DAY=86400
+    today=datetime.datetime.today()
+    today_timestamp=datetime.datetime.timestamp(today)
+    MuchDay=float(day)*ONE_DAY
+    dayForCheck=today_timestamp-MuchDay
+    folders=os.listdir(dir)
+    try:
+        for folder in folders:
+            folderpth=os.path.join(dir,folder)
+            datemodify=time.ctime(os.path.getmtime(folderpth))
+           # print(datemodify)
+            datemodify_formater=datetime.datetime.strptime(datemodify, '%a %b %d %H:%M:%S %Y')
+            datemodify_time=datemodify_formater.strftime('%H:%M:%S')
+            datemodify_timestamp=datemodify_formater.timestamp()
+            if datemodify_timestamp >=dayForCheck:
+            # print(datemodify_timestamp)
+                datemodify_jalali=JalaliDate.fromtimestamp(datemodify_timestamp)
+                print(str(folder)+" : "+str(datemodify_jalali)+"  "+str(datemodify_time)+" ENG_Date : "+str(datemodify_formater))
+            # print(folderpth+" : "+str(datemodify_formater))
+                
+            
+    except Exception:
+        print("ERROR : "+Exception )
+def whichFileChange_contractor():
+    dir= input("Please Enter Directory Address : ")
+    day=input("Please Enter Day for Check File modifed after them or NOT : ")
+    whichFileChange(dir,day)
+####################################################################################################################################################################
+def LDAP_search(paswd,user="guest@internet.com",serv="192.168.0.4",msearch_base='dc=internet,dc=com',msearch_filter='(&(objectCategory=user))'):
+    os.system('cls')
+    server = Server(serv)
+    conn = Connection(server, user, paswd, client_strategy=SAFE_SYNC, auto_bind=True)
+    #status, result, response, _ = conn.search('o=test', '(objectclass=*)')  # usually you don't need the original request (4th element of the returned tuple)
+    if not conn.bind():
+        print('error')
+    else:
+        print(conn)
+        print('##############################################################################')
+    entries = conn.search(msearch_base, msearch_filter)
+    # for entry in entries:
+    #  tet=entry.get('raw_attributes')
+    with open('export.txt','w', encoding="utf-8") as export_txt: 
+        for entry in entries[2]:
+            try:
+             just_name=re.findall('CN=(.*?),',str((entry).get('raw_dn')))[0]
+             just_OU=re.findall('OU=(.*?),',str((entry).get('raw_dn')))
+            #  print(just_name+' ==> '+",".join(just_OU))
+            #  print("\n")
+             #print(len(just_OU))
+             export_txt.write(just_name.encode('latin-1').decode('unicode-escape').encode('latin-1').decode('utf-8')+" ==> "+",".join(just_OU)+'\n')
+        
+            except Exception:
+                 pass
+           
+####################################################################################################################################################################
 
 def Select(num)  :
    func={
@@ -202,8 +263,8 @@ def Select(num)  :
        8:CloseApp_contractor,
        9:SerchProccessPID_contractor,
        10:CheckUSBDriveIsExist,
-       11:getAppRun_PID_contractor,
-      
+       11:whichFileChange_contractor,
+       12:getAppRun_PID_contractor,      
    }
   
    return func[num]() if num<= len(func) else print("Wront Command")
