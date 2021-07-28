@@ -54,14 +54,14 @@ def getAppRun(Process_name="firefox.exe"):
     if count == 0:
         print('Process Not Run')
     else:
-        print('Process is already running!')
+        print('('+Process_name+') = Process is already running!')
 
 def getAppRun_contractor():
     getAppRun(input("Enter Your Process Name (Like 'firefox.exe') : "))
 ####################################################################################################################################################################
 def getAppRun_PID(mPID):
     try:
-        process = psutil.Process(mPID)
+        process = psutil.Process(int(mPID))
         process_name = process.name()
         getAppRun(process_name)
     except Exception as e:
@@ -202,6 +202,7 @@ def Select(num)  :
        8:CloseApp_contractor,
        9:SerchProccessPID_contractor,
        10:CheckUSBDriveIsExist,
+       11:getAppRun_PID_contractor,
       
    }
   
